@@ -22,7 +22,7 @@ namespace Encryption
             return number;
         }
 
-        private static bool IsPrime(long number)
+        public static bool IsPrime(long number)
         {
             const int rounds = 10;
             
