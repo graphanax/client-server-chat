@@ -11,6 +11,6 @@ namespace Server.ClientModel
             Login = login ?? throw new ArgumentNullException(nameof(login));
         }
 
-        public string Source { get; set; }
+        public string Source { get; }
     }
 }
