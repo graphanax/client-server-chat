@@ -25,7 +25,7 @@ namespace Encryption
             var fi = (p - 1) * (q - 1);
 
             e = GetPublicPartKey(fi);
-            d = GetPrivatePartKey(fi, e);
+            d = GetPrivatePartKey(e, fi);
 
             _isReady = true;
         }
@@ -77,20 +77,6 @@ namespace Encryption
             return strBuilder.ToString();
         }
 
-        private static long GetPrivatePartKey(long fi, long e)
-        {
-            long d = e + 1;
-
-            while (true)
-            {
-                if ((d * e) % fi == 1)
-                    break;
-                d++;
-            }
-
-            return d;
-        }
-
         private static long GetPublicPartKey(long fi)
         {
             long e = fi - 1;
@@ -105,6 +91,28 @@ namespace Encryption
             }
 
             return e;
+        }
+        
+        // Advanced Euclid algorithm
+        private static long GetPrivatePartKey(long a, long n)
+        {
+            long d0 = n;
+            long d1 = a;
+            long y0 = 0;
+            long y1 = 1;
+
+            while (d1 > 1)
+            {
+                long q = d0 / d1;
+                long d2 = d0 % d1;
+                long y2 = y0 - q * y1;
+                d0 = d1;
+                d1 = d2;
+                y0 = y1;
+                y1 = y2;
+            }
+
+            return y1 < 0 ? y1 + n : y1;
         }
 
         private static BigInteger FastExp(BigInteger a, BigInteger z, BigInteger n)
