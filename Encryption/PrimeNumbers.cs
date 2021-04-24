@@ -6,15 +6,16 @@ namespace Encryption
 {
     public static class PrimeNumbers
     {
+        private static readonly Random Random = new Random();
+        
         public static long Generate()
         {
             const int left = 1000, right = 10000;
-            var random = new Random();
             long number;
 
             while (true)
             {
-                number = random.Next(left, right);
+                number = Random.Next(left, right);
                 if (IsPrime(number))
                     break;
             }
