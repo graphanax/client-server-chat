@@ -147,18 +147,31 @@ namespace Client.ViewModel
                         switch (serverObject)
                         {
                             case ConnectedClient connectedClient:
-                                CanConnect = false;
-                                CanDisconnect = true;
-
-                                Application.Current.Dispatcher.Invoke(() =>
+                                if (connectedClient.IsOnline)
                                 {
-                                    Messages.Add(new MessageItem
-                                    {
-                                        Content = $"New connection: {connectedClient.Login}.", SendTime = DateTime.Now
-                                    });
-                                });
+                                    CanConnect = false;
+                                    CanDisconnect = true;
 
-                                OnPropertyChanged();
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        Messages.Add(new MessageItem
+                                        {
+                                            Content = $"{connectedClient.Login} joined the chat.",
+                                            SendTime = DateTime.Now
+                                        });
+                                    });
+
+                                    OnPropertyChanged();
+                                } else 
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        Messages.Add(new MessageItem
+                                        {
+                                            Content = $"{connectedClient.Login} left the chat.",
+                                            SendTime = DateTime.Now
+                                        });
+                                    });
+
                                 break;
                             case EncryptedMessage encryptedMessage:
                                 if (encryptedMessage.Client.Login == _client.Login) continue;

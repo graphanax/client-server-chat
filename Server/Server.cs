@@ -71,7 +71,7 @@ namespace Server
 
                                 serverClient = new ServerClient(client, connectedClient.Login);
                                 _clients.Add(serverClient);
-
+                                
                                 WriteAboutNewConnection(connectedClient);
                                 SendToAllClients(connectedClient);
                             }
@@ -100,7 +100,8 @@ namespace Server
                             _clients.Remove(serverClient);
                         }
 
-                        _delOutput($"{serverClient.Login} left the chat.\n");
+                        _delOutput($"Disconnection: {serverClient.Login}.\n");
+                        WriteAboutDisconnection(serverClient);
                     }, TaskCreationOptions.LongRunning);
                 }
             }
@@ -144,6 +145,12 @@ namespace Server
         private static void WriteAboutNewConnection(ConnectedClient client)
         {
             _delOutput($"New connection: {client.Login} ({client.Host}).\n");
+        }
+
+        private static void WriteAboutDisconnection(ServerClient client)
+        {
+            var conClient = new ConnectedClient(string.Empty, client.Login) {IsOnline = false};
+            SendToAllClients(conClient);
         }
 
         private static void WriteText(EncryptedMessage message)

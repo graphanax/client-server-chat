@@ -7,11 +7,10 @@ namespace Server.ClientModel
     {
         public TcpClient TcpClient { get; }
 
-        public ServerClient(TcpClient client, Guid id, string login)
+        public ServerClient(TcpClient client, string login)
         {
             TcpClient = client ?? throw new ArgumentNullException(nameof(client));
             Login = login ?? throw new ArgumentNullException(nameof(login));
-            Id = id;
         }
 
         public ServerClient()

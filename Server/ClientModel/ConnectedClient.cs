@@ -5,12 +5,14 @@ namespace Server.ClientModel
     [Serializable]
     public sealed class ConnectedClient : Client
     {
-        public ConnectedClient(string source, string login)
+        public ConnectedClient(string host, string login)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
+            Host = host ?? throw new ArgumentNullException(nameof(host));
             Login = login ?? throw new ArgumentNullException(nameof(login));
+            IsOnline = true;
         }
 
-        public string Source { get; }
+        public string Host { get; }
+        public bool IsOnline;
     }
 }
