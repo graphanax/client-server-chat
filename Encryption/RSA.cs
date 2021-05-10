@@ -7,7 +7,10 @@ namespace Encryption
 {
     public class Rsa
     {
-        private long p, q, r, e, d;
+        private long p, q, d;
+        public long r { get; private set; }
+        public long e { get; private set; }
+        
         private bool _isReady;
 
         public Rsa()
@@ -30,12 +33,12 @@ namespace Encryption
             _isReady = true;
         }
 
-        public string[] Encrypt(string text, long publicE, long privateD)
+        public string[] Encrypt(string text, long publicE, long publicR)
         {
             if (!_isReady)
                 throw new ArgumentException("Method Initialize() not called.");
 
-            return Encode(text, publicE, privateD);
+            return Encode(text, publicE, publicR);
         }
 
         public string Decrypt(string[] data)
