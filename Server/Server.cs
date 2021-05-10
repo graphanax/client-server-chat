@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using System.Threading.Tasks;
 using Server.ClientModel;
 
@@ -21,6 +23,8 @@ namespace Server
             _tcpListener = new TcpListener(address, port);
             _clients = new List<ServerClient>();
             _delOutput = delegateOutput;
+
+            _delOutput($"Starting the server on {address}:{port}...\n");
         }
 
         public void Start()
@@ -58,37 +62,51 @@ namespace Server
                             {
                                 _delOutput("The connection to the client connected with a username " +
                                            "that is already occupied was not established.\n");
+                                
+                                Thread.CurrentThread.Abort();
                             }
                             else
                             {
                                 if (connectedClient == null) return;
 
-                                serverClient = new ServerClient(client, connectedClient.Id, connectedClient.Login);
+                                serverClient = new ServerClient(client, connectedClient.Login);
                                 _clients.Add(serverClient);
 
                                 WriteAboutNewConnection(connectedClient);
                                 SendToAllClients(connectedClient);
                             }
                         }
-
+                        
                         while (client.Client.Connected)
                         {
-                            var encMess = bf.Deserialize(stream) as EncryptedMessage;
+                            try
+                            {
+                                var encMess = bf.Deserialize(stream) as EncryptedMessage;
 
-                            WriteText(encMess);
-                            SendToAllClients(encMess);
+                                WriteText(encMess);
+                                SendToAllClients(encMess);
+                            }
+                            catch
+                            {
+                                if (client.Client.Connected)
+                                {
+                                    client.Client.Disconnect(true);
+                                }
+                            }
                         }
 
                         lock (_clients)
                         {
                             _clients.Remove(serverClient);
                         }
+
+                        _delOutput($"{serverClient.Login} left the chat.\n");
                     }, TaskCreationOptions.LongRunning);
                 }
             }
             catch (Exception e)
             {
-                _delOutput(e.Message);
+                _delOutput($"An unexpected error occurred: {e.Message}\n");
             }
         }
 
@@ -122,17 +140,17 @@ namespace Server
                 }
             });
         }
-
-        private void WriteAboutNewConnection(ConnectedClient client)
+        
+        private static void WriteAboutNewConnection(ConnectedClient client)
         {
-            _delOutput($"New connection: {client.Login} - {client.Source}\n");
+            _delOutput($"New connection: {client.Login} ({client.Host}).\n");
         }
 
         private static void WriteText(EncryptedMessage message)
         {
             _delOutput($"{message.Client.Login} " +
-                       $"[{message.Message.SendTime.ToString()}]: " +
-                       $"{string.Join(" ", message.Message.Content)}");
+                       $"[{message.Message.SendTime.ToString(CultureInfo.InvariantCulture)}]: " +
+                       $"{string.Join(" ", message.Message.Content)}\n");
         }
     }
 }
