@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Prism.Commands;
@@ -18,9 +17,14 @@ namespace Client.ViewModel
 {
     public class Connection : INotifyPropertyChanged
     {
-        public string Host { get; set; }
-        public int Port { get; set; }
+        public string ServerHost { get; set; }
+        public int ServerPort { get; set; }
         public string Login { get; set; }
+
+        private readonly string _clientHost;
+        private readonly int _clientPort;
+
+        private const int DefaultServerPort = 4095;
 
         public string Text
         {
@@ -41,9 +45,15 @@ namespace Client.ViewModel
         private NetworkStream _stream;
         private ConnectedClient _client;
 
+        public bool CanConnect { get; set; }
+        public bool CanDisconnect { get; set; }
+
         #region Encryption
 
         private readonly Rsa _rsa = new Rsa();
+
+        public long LocalE => _rsa.e;
+        public long LocalR => _rsa.r;
 
         public int RemoteE
         {
@@ -55,26 +65,32 @@ namespace Client.ViewModel
             }
         }
 
-        public int RemoteN
+        public int RemoteR
         {
-            get => _remoteN;
+            get => _remoteR;
             set
             {
-                _remoteN = value;
+                _remoteR = value;
                 OnPropertyChanged();
             }
         }
 
         private int _remoteE;
-        private int _remoteN;
+        private int _remoteR;
         private string _text;
 
         #endregion
 
-        public Connection(IPAddress ip, int port)
+        public Connection(IPAddress ip = null, int port = default)
         {
-            Host = ip.ToString();
-            Port = port;
+            _clientHost = ip?.ToString();
+            _clientPort = port;
+
+            ServerHost = GetLocalIpAddress().ToString();
+            ServerPort = DefaultServerPort;
+
+            CanConnect = true;
+            CanDisconnect = false;
 
             Messages = new ObservableCollection<MessageItem>();
 
@@ -86,11 +102,25 @@ namespace Client.ViewModel
         private void Connect()
         {
             _tcpClient?.Close();
-            _tcpClient = new TcpClient();
 
             try
             {
-                _tcpClient.Connect(Host, Port);
+                if (_clientHost == null && _clientPort == 0)
+                    _tcpClient = new TcpClient();
+                else
+                    _tcpClient = new TcpClient(_clientHost ?? string.Empty, _clientPort);
+            }
+            catch
+            {
+                MessageBox.Show("When creating a local socket, a fatal error occurred, restart the application.",
+                    "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                return;
+            }
+
+            try
+            {
+                _tcpClient.Connect(ServerHost, ServerPort);
             }
             catch
             {
@@ -101,7 +131,7 @@ namespace Client.ViewModel
             }
 
             _stream = _tcpClient.GetStream();
-            _client = new ConnectedClient(GetLocalIpAddress().ToString(), Login);
+            _client = new ConnectedClient(_clientHost, Login);
 
             Task.Factory.StartNew(() =>
             {
@@ -117,11 +147,14 @@ namespace Client.ViewModel
                         switch (serverObject)
                         {
                             case ConnectedClient connectedClient:
+                                CanConnect = false;
+                                CanDisconnect = true;
+
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     Messages.Add(new MessageItem
                                     {
-                                        Content = $"New connection: {connectedClient.Login}", SendTime = DateTime.Now
+                                        Content = $"New connection: {connectedClient.Login}.", SendTime = DateTime.Now
                                     });
                                 });
 
@@ -129,7 +162,7 @@ namespace Client.ViewModel
                                 break;
                             case EncryptedMessage encryptedMessage:
                                 if (encryptedMessage.Client.Login == _client.Login) continue;
-                                
+
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     var text = _rsa.Decrypt(encryptedMessage.Message.Content);
@@ -142,6 +175,7 @@ namespace Client.ViewModel
                 catch
                 {
                     ShowDisconnectMessage();
+                    Disconnect();
                 }
             }, TaskCreationOptions.LongRunning);
         }
@@ -150,7 +184,7 @@ namespace Client.ViewModel
         {
             try
             {
-                var data = _rsa.Encrypt(Text, RemoteE, RemoteN);
+                var data = _rsa.Encrypt(Text, RemoteE, RemoteR);
 
                 Dispatcher.CurrentDispatcher.Invoke(() =>
                 {
@@ -173,6 +207,8 @@ namespace Client.ViewModel
         private void Disconnect()
         {
             _tcpClient?.Close();
+            CanConnect = true;
+            CanDisconnect = false;
             OnPropertyChanged();
         }
 
@@ -198,7 +234,7 @@ namespace Client.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged(string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
