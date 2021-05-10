@@ -131,7 +131,7 @@ namespace Client.ViewModel
             }
 
             _stream = _tcpClient.GetStream();
-            _client = new ConnectedClient(_clientHost, Login);
+            _client = new ConnectedClient(_clientHost ?? GetLocalIpAddress().ToString(), Login);
 
             Task.Factory.StartNew(() =>
             {
