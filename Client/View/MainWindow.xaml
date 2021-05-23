@@ -1,0 +1,160 @@
+﻿<Window
+    x:Class="Client.View.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Chat"
+    Width="800"
+    Height="450"
+    MinWidth="800"
+    MinHeight="200"
+    Background="#d6e2ee"
+    WindowStyle="SingleBorderWindow"
+    Icon="D:\Artyom\Projects\Rider\CSAN\Client-ServerChat\Client-ServerChat\Client\Resources\favicon.png">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/TextResources.xaml" />
+                <ResourceDictionary Source="/Resources/ButtonsResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" MouseDown="DockPanel_MouseDown">
+            <StackPanel Orientation="Horizontal" Background="#f7f7f7">
+                <Label Content="Local public key: " />
+                <Label Content="(" />
+                <TextBox
+                    Width="80"
+                    Height="30"
+                    IsReadOnly="True"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding LocalE, Mode=OneWay}" />
+                <Label Content=";" />
+                <TextBox
+                    Width="80"
+                    Height="30"
+                    IsReadOnly="True"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding LocalR, Mode=OneWay}" />
+                <Label Content=")" />
+                <Label Content="Remote public key: " Margin="10,0,0,0"/>
+                <Label Content="(" />
+                <TextBox
+                    Width="80"
+                    Height="30"
+                    IsReadOnly="{Binding CanDisconnect}"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding RemoteE, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Content=";" />
+                <TextBox
+                    Width="80"
+                    Height="30"
+                    IsReadOnly="{Binding CanDisconnect}"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding RemoteR, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Content=")" />
+            </StackPanel>
+        </DockPanel>
+
+        <DockPanel Grid.Row="1" Background="#f7f7f7" >
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Login:" />
+                <TextBox
+                    Width="100"
+                    Height="30"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                <Label Content="Host:" />
+                <TextBox
+                    Height="30"
+                    MinWidth="130"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding ServerHost}" />
+            </StackPanel>
+            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                <Label Content="Port:" />
+                <TextBox
+                    Width="70"
+                    Height="30"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding ServerPort}" />
+            </StackPanel>
+
+            <StackPanel
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Button
+                    Command="{Binding ConnectCommand}"
+                    Content="Connect"
+                    IsEnabled="{Binding CanConnect}"
+                    Style="{StaticResource CommandButton}" />
+                <Button
+                    Command="{Binding DisconnectCommand}"
+                    Content="Disconnect"
+                    IsEnabled="{Binding CanDisconnect}"
+                    Style="{StaticResource CommandButton}" />
+            </StackPanel>
+        </DockPanel>
+
+        <DockPanel Grid.Row="2" Margin="5,10,5,5">
+            <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="MessagesItems" ItemsSource="{Binding Messages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="10,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel MinWidth="120">
+                                    <TextBlock Style="{StaticResource AuthorStyle}" Text="{Binding Path=Login}" />
+                                    <TextBlock Style="{StaticResource SendTimeStyle}"
+                                               Text="{Binding Path=SendTime, Converter={StaticResource DateTimeConverter}}" />
+                                </StackPanel>
+                                <Border
+                                    Grid.Column="1"
+                                    Margin="20,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Background="White"
+                                    Padding="5"
+                                    CornerRadius="4">
+                                    <TextBlock Style="{StaticResource MessageStyle}" Text="{Binding Path=Content}" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Grid Grid.Row="3" Background="#f7f7f7">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox
+                VerticalContentAlignment="Center"
+                Template="{StaticResource TextBoxBaseControlTemplate}"
+                Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" 
+                Margin="10,10,10,10"/>
+            <Button
+                Grid.Column="1" IsDefault="True"
+                Content="Send"
+                Command="{Binding SendMessageCommand}"
+                IsEnabled="{Binding Text, Converter={StaticResource EmptyTextConverter}}"
+                Style="{StaticResource CommandButton}"
+                Margin="10,10,10,10"/>
+        </Grid>
+    </Grid>
+</Window>
