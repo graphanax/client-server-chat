@@ -48,7 +48,7 @@ namespace Server
 
                     Task.Factory.StartNew(() =>
                     {
-                        var stream = client.GetStream();
+                        using var stream = client.GetStream();
                         var bf = new BinaryFormatter();
 
                         var serverClient = new ServerClient();
@@ -63,6 +63,7 @@ namespace Server
                                 _delOutput("The connection to the client connected with a username " +
                                            "that is already occupied was not established.\n");
                                 
+                                client.Client.Disconnect(true);
                                 Thread.CurrentThread.Abort();
                             }
                             else

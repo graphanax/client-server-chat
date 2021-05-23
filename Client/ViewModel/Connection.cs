@@ -121,6 +121,8 @@ namespace Client.ViewModel
             try
             {
                 _tcpClient.Connect(ServerHost, ServerPort);
+                _client = new ConnectedClient(_clientHost ?? GetLocalIpAddress().ToString(), Login);
+                _stream = _tcpClient.GetStream();
             }
             catch
             {
@@ -129,9 +131,6 @@ namespace Client.ViewModel
 
                 return;
             }
-
-            _stream = _tcpClient.GetStream();
-            _client = new ConnectedClient(_clientHost ?? GetLocalIpAddress().ToString(), Login);
 
             Task.Factory.StartNew(() =>
             {
@@ -199,7 +198,7 @@ namespace Client.ViewModel
             {
                 var data = _rsa.Encrypt(Text, RemoteE, RemoteR);
 
-                Dispatcher.CurrentDispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     Messages.Add(new MessageItem {Login = _client.Login, Content = Text, SendTime = DateTime.Now});
                 });
