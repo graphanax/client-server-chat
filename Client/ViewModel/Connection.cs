@@ -3,14 +3,15 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
-using Prism.Commands;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Client.Annotations;
 using Encryption;
+using Prism.Commands;
 using Server.ClientModel;
 
 namespace Client.ViewModel
@@ -243,10 +244,11 @@ namespace Client.ViewModel
             throw new Exception("No network adapters with an IPv4 address in the system");
         }
 
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged(string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
