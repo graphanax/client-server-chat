@@ -106,7 +106,6 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="Resources\favicon.png" />
-      <Content Include="Resources\Send.png" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
