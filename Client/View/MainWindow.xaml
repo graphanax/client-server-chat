@@ -9,7 +9,7 @@
     MinHeight="200"
     Background="#d6e2ee"
     WindowStyle="SingleBorderWindow"
-    Icon="D:\Artyom\Projects\Rider\CSAN\client-server-chat\Client\Resources\favicon.png">
+    Icon="/Resources/favicon.png">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
