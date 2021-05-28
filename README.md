@@ -1,4 +1,4 @@
-## Сlient-server chat on the TCP with RSA encryption.
+## Сlient-server chat on the TCP with RSA encryption
 
 The software solution consists of a client application (WPF application with the MVVM pattern), 
 a server application (console application), and an RSA encryption library.
